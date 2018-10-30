@@ -5,7 +5,7 @@ import re
 import json
 
 
-#url='https://wenku.baidu.com/view/0571dbdf6f1aff00bed51e62.html?sxts=1539958717044'
+url='https://wenku.baidu.com/view/0571dbdf6f1aff00bed51e62.html?sxts=1539958717044'
 jsList=[]
 picList=[]
 def parserJS(url):#文章地址
@@ -35,12 +35,14 @@ def parserJS(url):#文章地址
     title=title.split(':')[1].replace('\'','').strip(' ')
     print(title)
     print('文档的类型为%s' % docType)
-    print('共有%d页' % len(jsList))
+    
 
     if docType =='doc' or docType == 'txt':
         parserDoc(add,title)
-    if docType =='ppt' or docType == 'pdf':
+    if docType =='ppt':
         parserPPt(docId,title)
+    if docType == 'pdf':
+        parserPDF(add,title)
     
 def parserDoc(add,file_name):
     add=add.split(' WkInfo.htmlUrls =')[1].split(';')[0]
@@ -51,24 +53,45 @@ def parserDoc(add,file_name):
     for j in add:
         if 'json' in j:
             jsList.append(j.split(':',1)[1].replace('}','').strip(']'))
-#        if 'png' in j:
-#            picList.append(j.split(':', 1)[1].replace('}', '').strip(']'))
- #   picList.remove(picList[0])
     
+    print('共有%d页' % len(jsList))
     for i in jsList:
         parserPage(i,file_name)
-            
+
+    
             
 def parserPPt(docId,file_name):
     print('Downloading pictures······')
+    #print(docId)
     r=requests.get('https://wenku.baidu.com/browse/getbcsurl?doc_id=%s&pn=1&rn=99999&type=ppt'%docId)
+    print(r.url)
     result=r.json()
+    print('共有%d页' % len(result))
     for i in result:
         r=requests.get(i['zoom'])
+        #print(i['zoom'])
         print('Downloading page %d'%i['page'])
-        with open(file_name+'%d.jpg'%i['page'],'wb') as fd:
+        with open('./img/'+file_name+'%d.jpg'%i['page'],'wb') as fd:
             fd.write(r.content)
-		
+
+def parserPDF(add,file_name):
+    add = add.split(' WkInfo.htmlUrls =')[1].split(';')[0]
+    add = add.replace('\\x22', '').replace('\\', '')
+    add = re.findall(r'pageLoadUrl:.*\w', add)[0].split(',')
+    # print(add)
+    
+    for j in add:
+        if 'png' in j:
+            picList.append(j.split(':', 1)[1].replace('}', '').strip(']'))
+    picList.remove(picList[0])
+
+    print('共有%d页' % len(picList))
+    
+    for i in range(len(picList)):
+        r = requests.get(picList[i])
+        with open('./img/data%d.png' % i, 'wb') as fd:
+            fd.write(r.content)
+
 
 def parserPage(url,file_name):#js地址
     r = requests.get(url.replace('\\', ''))#访问js
@@ -87,4 +110,4 @@ def parserPage(url,file_name):#js地址
 if __name__ == '__main__':
     url=input('请输入网址：')
     parserJS(url)
-
+    
