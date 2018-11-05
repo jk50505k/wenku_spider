@@ -3,11 +3,14 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import json
+import os 
 
-
-url='https://wenku.baidu.com/view/0571dbdf6f1aff00bed51e62.html?sxts=1539958717044'
+#url='https://wenku.baidu.com/view/0571dbdf6f1aff00bed51e62.html?sxts=1539958717044'
 jsList=[]
 picList=[]
+if not os.path.exists('./img/'):
+    os.makedirs('./img/')
+
 def parserJS(url):#文章地址
     global add,docType
     r=requests.get(url)
