@@ -101,14 +101,16 @@ def parserPage(url,file_name):#js地址
     result = json.loads(r.text.split('(', 1)[1].strip(')'))#转为json格式
     body = result['body']
     for i in body:
-        text=i['c']
-        if type(text)!=str:
-            continue
-        if text==' ':
-          text='\n'
-        print(text,end=' ')
-        with open(file_name+'.txt','a') as fd:
-            fd.write(str(text))
+        if i['t'] == 'word':
+            text=i['c']
+            # if type(text)!=str:
+            #     continue
+            if i['ps']!=None and '_enter' in i['ps'].keys():
+                text='\n'
+                
+            print(text,end='')
+            with open(file_name+'.txt','a') as fd:
+                fd.write(text)
    
 if __name__ == '__main__':
     url=input('请输入网址：')
